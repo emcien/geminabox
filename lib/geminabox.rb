@@ -242,8 +242,20 @@ HTML
 
   helpers do
     def spec_for(gem_name, version)
+      # Where would we find a non-platformed gem?
       spec_file = File.join(settings.data, "quick", "Marshal.#{Gem.marshal_version}", "#{gem_name}-#{version}.gemspec.rz")
-      Marshal.load(Gem.inflate(File.read(spec_file))) if File.exists? spec_file
+
+      if File.exists?(spec_file)
+        # use it...
+        return Marshal.load(Gem.inflate(File.read(spec_file)))
+        
+      else
+        # If we didn't have a ruby version of the gemspec, use the first 
+        # platformed one that we find
+        
+        files = Dir.glob( File.join(settings.data, "quick", "Marshal.#{Gem.marshal_version}", "#{gem_name}-#{version}-*.gemspec.rz") )
+        return files.length > 0 ? Marshal.load(Gem.inflate(File.read(files[0]))) : nil
+      end
     end
 
     # Return a list of versions of gem 'gem_name' with the dependencies of each version.
